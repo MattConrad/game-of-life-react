@@ -5,34 +5,49 @@ export const initGame = (seed, populateCenterOnly, rows, columns, fillFactorPerc
     };
 }
 
+export const initGameFromPattern = (pattern, rows, columns) => {
+    return { seed: 0, populateCenterOnly: true, pattern, rows, columns, fillFactorPercent: 0,
+        generation: 0,
+        board: initBoardFromPattern(pattern, rows, columns)
+    }
+}
+
+const initBoardFromPattern = (pattern, rows, columns) => {
+    const isRect = pattern.every(row => row.length === pattern[0].length);
+    if (!isRect) throw 'Pattern array must be rectangular.';
+
+    const patRows = pattern.length;
+    const patCols = pattern[0].length;
+    if (patRows > rows || patCols > columns) throw 'Pattern must be smaller in width and height than board.';
+
+    const patRowStartIndex = Math.floor((rows - patRows) / 2);
+    const patColStartIndex = Math.floor((columns - patCols) / 2);
+
+    // we get a little cute here to avoid multiple refs to the same array https://stackoverflow.com/questions/18163234/declare-an-empty-two-dimensional-array-in-javascript
+    const board = Array(rows).fill(false).map(() => new Array(columns).fill(false));
+
+    for(let i = 0; i < pattern.length; i++) {
+        for(let j = 0; j < pattern[0].length; j++) {
+            board[patRowStartIndex + i][patColStartIndex + j] = pattern[i][j];
+        }
+    }
+
+    return board;
+}
+
+// MWCTODO: this goes away entirely.
 const initBoard = (seed, populateCenterOnly, rows, columns, fillFactorPercent) => {
+
     const fillFactorDecimal = fillFactorPercent * 1.0 / 100;
     const nextRand = mulberry32(seed);
-
-    // if we're populating only the center of the board, figure out how much. populate either 15% of the h/w, or 10 cells, whichever is bigger (i.e. smallest margin).
-    const rowMargin = Math.min(((rows - (rows * 0.20)) / 2), ((rows - 10) / 2));
-    const colMargin = Math.min(((columns - (columns * 0.20)) / 2), ((columns - 10) / 2));
 
     const board = [];
     for(let i = 0; i < rows; i++) {
         const row = [];
         for(let j = 0; j < columns; j++) {
+            const isAlive = nextRand() < fillFactorDecimal;
 
-            // if we are populating center only, cells outside the center are never alive.
-            if (populateCenterOnly 
-                && (
-                    (i <= rowMargin || i >= (rows - rowMargin))
-                    ||
-                    (j <= colMargin || j >= (columns - colMargin))
-                )) {
-
-                row.push(false);
-                continue;
-            } else {
-                const isAlive = nextRand() < fillFactorDecimal;
-
-                row.push(isAlive);
-            }
+            row.push(isAlive);
         }
         board.push(row);
     }
@@ -101,6 +116,7 @@ export const nextBoard = (board) => {
     });
 };
 
+// MWCTODO: this has moved to PatternSelect and eventually goes away entirely.
 /* eslint-disable no-mixed-operators  */
 
 // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript

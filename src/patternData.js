@@ -1,7 +1,7 @@
 import data from './patternData.txt';
 // patterns.txt is pieces taken from http://www.radicaleye.com/lifepage/glossary.html
 
-// resulting promise returns an array of objects with { name, cells } properties. name is the pattern name, cells are an array of t/f just like the gameboard.
+// resulting promise returns an object with the pattern name as the key and a rectangular array of cells as the value.
 const parsePatternsPromise = async () => {
     const dataString = await fetch(data).then(response => response.text());
     
@@ -17,7 +17,6 @@ const parsePatternsPromise = async () => {
         );
 
         patterns[name] = cells;
-        // patterns.push({ name, cells });
     });
 
     return patterns;

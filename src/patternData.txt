@@ -1,3 +1,18 @@
+(random, fill 30%)
+(special cased in code)
+
+(random, fill 15%)
+(special cased in code)
+
+(random, fill 45%)
+(special cased in code)
+
+(random, fill 60%)
+(special cased in code)
+
+(fill 100%)
+(special cased in code)
+
 acorn
 .*.....
 ...*...

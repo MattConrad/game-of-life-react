@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { initGame, nextGeneration, forceToGeneration } from './game';
+import { initGame, initGameFromPattern, nextGeneration, forceToGeneration } from './game';
+import { maxSpeedRange, initialDelay, initialSpeedRangeValue, getDelayFromSpeedRange } from './speed';
 import Board from './components/Board';
 import PatternSelect from './components/PatternSelect';
-import { maxSpeedRange, initialDelay, initialSpeedRangeValue, getDelayFromSpeedRange } from './speed';
+
+const getSeedFromNow = () => Date.now();
+const initialGame = initGame(getSeedFromNow(), true, 40, 100, 40);
 
 function App() {
-
-  const getSeedFromNow = () => Date.now();
-  
-  const initialGame = initGame(getSeedFromNow(), true, 40, 100, 35);
 
   const [currentSpeedRange, setCurrentSpeedRange] = useState(initialSpeedRangeValue);
   const [game, setGame] = useState(initialGame);
@@ -32,7 +31,7 @@ function App() {
   }
 
   const loadPattern = (patternData) => {
-    console.log(patternData);
+    setGame(initGameFromPattern(patternData, 40, 100));
   }
 
   useEffect(() => {
@@ -83,7 +82,7 @@ function App() {
         <br />
         <br />
         <br />
-        <PatternSelect loadPattern={loadPattern} />
+        <PatternSelect seed={game.seed} loadPattern={loadPattern} />
       </div>
       <div id="board-container">
         <Board board={game.board} />

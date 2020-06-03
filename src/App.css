@@ -6,22 +6,6 @@
   color: green;
 }
 
-/* .board {
-  font-size: 0;
-}
-
-.cell {
-  display: inline-block;
-  height: 15px;
-  width: 15px;
-  border-radius: 3px;
-  background-color: rgb(184, 184, 184);
-}
-
-.cell.alive {
-  background-color: rgb(4, 92, 4);
-} */
-
 #main {
   display: flex;
   justify-content: center;

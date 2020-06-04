@@ -30,7 +30,7 @@ function App() {
     setGame(forceToGeneration(game, Math.max(generationNumber, 0)));
   }
 
-  const loadPattern = (patternData) => {
+  const reloadGame = (patternData) => {
     setGame(initGameFromPattern(patternData, 40, 100));
   }
 
@@ -82,7 +82,7 @@ function App() {
         <br />
         <br />
         <br />
-        <PatternSelect seed={game.seed} loadPattern={loadPattern} />
+        <PatternSelect reloadGame={reloadGame} />
       </div>
       <div id="board-container">
         <Board board={game.board} />

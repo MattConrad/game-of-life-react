@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { patternsPromise } from '../patternData';
 
 const PatternSelect = ({reloadGame}) => {
     const [patterns, setPatterns] = useState();
+
+    // load patterns from patternsPromise on first render only.
+    useEffect(() => {
+        patternsPromise.then(loadedPatterns => { 
+            setPatterns(loadedPatterns);
+        });
+    }, []);
+
+    // MWCTODO: this is emitting a dependency warning, which you're going to need to study to resolve.
+    // patterns should only change once (when first initialized). when this happens, trigger the change event using the first pattern in the patterns object.
+    useEffect(() => {
+        if (!patterns) return;
+
+        const firstPatternName = Object.keys(patterns)[0];
+        changePattern(firstPatternName);
+    }, [patterns]);
 
     const calculatePattern = (patternName) => {
         // for now, we can be clever and compute the fillfactor from the pattern name.
@@ -23,14 +39,6 @@ const PatternSelect = ({reloadGame}) => {
     
         return pattern;
     };
-
-    patternsPromise.then(loadedPatterns => { 
-        setPatterns(loadedPatterns);
-
-        // const firstPatternName = Object.keys(loadedPatterns)[0];
-        // console.log('woops');
-        // changePattern(firstPatternName);
-    });
 
     const changePattern = (patternName) => {
         if (patternName[0] === '(') {

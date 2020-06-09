@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { patternsPromise } from '../patternData';
 
-const PatternSelect = ({reloadGame}) => {
+const PatternSelect = ({setGameIsRunning, reloadGame}) => {
     const [patterns, setPatterns] = useState();
 
     // load patterns from patternsPromise on first render only.
@@ -11,13 +11,19 @@ const PatternSelect = ({reloadGame}) => {
         });
     }, []);
 
-    // MWCTODO: this is emitting a dependency warning, which you're going to need to study to resolve.
     // patterns should only change once (when first initialized). when this happens, trigger the change event using the first pattern in the patterns object.
     useEffect(() => {
         if (!patterns) return;
 
+        // firstPatternName should also be the name of the first (default) value in the <select> widget. 
         const firstPatternName = Object.keys(patterns)[0];
         changePattern(firstPatternName);
+
+        // react wants to warn us about the "changePattern" function as an undeclared dependency. 
+        // but as long as we are properly check "patterns" we do not need to worry about "changePattern". 
+        // i wish we could turn off the warning for only this one dependency, and check all others, but this doesn't appear to be possible. so, silencing all.
+        
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [patterns]);
 
     const calculatePattern = (patternName) => {
@@ -41,6 +47,8 @@ const PatternSelect = ({reloadGame}) => {
     };
 
     const changePattern = (patternName) => {
+        setGameIsRunning(false);
+        
         if (patternName[0] === '(') {
             reloadGame(calculatePattern(patternName));
         } else {

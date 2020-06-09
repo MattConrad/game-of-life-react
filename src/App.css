@@ -1,26 +1,62 @@
-.board {
+#main {
+  padding: 20px;
+  display: flex;
+  align-items: stretch;
+}
+
+#sidebar { 
+  flex: 1 1 auto;
+  align-self: auto;
+  min-width: 250px;
+}
+
+#board-container { 
+  align-self: auto;
+  flex: 9 1 auto;
+}
+
+/* 
+#sidebar { 
+  width: 25%; 
+  float: left;
+}
+
+#board-container { 
+  width: 75%;
+  float: left;
+}
+
+#sidebar-group-1 { 
+  width: 100%;
+  float: left; 
+}
+
+#sidebar-group-2 { 
+  width: 100%;
+  float: left; 
+} 
+*/
+
+/* @media screen and (max-width: 768px) {
+  #sidebar { width: 100%; }
+
+  #sidebar-group-1 { width: 50%; }
+  #sidebar-group-2 { width: 50%; }
+
+  #board-container { width: 100%; }
+} */
+
+#speed-label, #speed-slider {
+  vertical-align: middle;
+  padding: 0px;
+  margin: 0px;
+}
+
+#board {
+  height: 100%;
   border: solid 1px grey;
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 18px;
   color: green;
 }
-
-#main {
-  display: flex;
-  justify-content: center;
-}
-
-/* flex-grow is what you're looking for on the subcontainers */
-
-#sidebar {
-  padding-top: 20px;
-  justify-content: center;
-  flex-grow: .5;  
-}
-
-#board-container {
-  flex-basis: auto;
-  padding: 20px;
-}
-

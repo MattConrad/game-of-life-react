@@ -11,6 +11,7 @@
     "react-scripts": "3.4.1",
     "serve": "^11.3.2"
   },
+  "homepage": "./",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

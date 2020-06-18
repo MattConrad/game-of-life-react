@@ -59,7 +59,7 @@ const PatternSelect = ({setGameIsRunning, reloadGame}) => {
     const conditionalRender = () => {
         if (patterns) {
             return (<div>
-                Pattern: &nbsp; <select onChange={(event) => changePattern(event.target.value)}>
+                Pattern: <select onChange={(event) => changePattern(event.target.value)}>
                     {Object.keys(patterns).map(p => <option key={p}>{p}</option>)}
                 </select>
             </div>);

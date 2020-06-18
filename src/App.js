@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './App.css';
 import { initGame, nextGeneration, forceToGeneration, alterWraparound } from './game';
 import { maxSpeedRange, initialDelay, initialSpeedRangeValue, getDelayFromSpeedRange } from './speed';
 import Board from './components/Board';
 import PatternSelect from './components/PatternSelect';
 import { useRefSize } from './hooks/useRefSize';
+import './App.css';
+
+// usually the precisely calculated width is correct, but sometimes we get line wrap of one character. better to have a narrower effective width than get this wrap.
+const BOARD_WIDTH_FUDGE_FACTOR = 0.98;
 
 function App() {
   const [currentSpeedRange, setCurrentSpeedRange] = useState(initialSpeedRangeValue);
+  const [boardPixelDimensions, setBoardPixelDimensions] = useState({ width: 0, height: 0 });
   const [game, setGame] = useState();
   const [delay, setDelay] = useState(initialDelay);
   const [isRunning, setIsRunning] = useState(false);
   const [wraparound, setWraparound] = useState(true);
 
   const boardRef = useRef();
-  const { width: boardWidth, height: boardHeight } = useRefSize(boardRef);
 
   const advanceOneGeneration = () => {
     setGame(nextGeneration(game));
@@ -36,11 +39,33 @@ function App() {
   }
 
   const reloadGame = (patternData) => {
-    setGame(initGame(patternData, 40, 100, wraparound));
+    const gameSize = computeGameBoardDimensions(boardPixelDimensions.width, boardPixelDimensions.height);
+    setGame(safelyInitializeGame(patternData, gameSize.rows, gameSize.columns));
   }
 
+  // initializing a game has a couple of known error scenarios, we'll catch and handle these
+  const safelyInitializeGame = (pattern, rows, columns) => {
+    try {
+      return initGame(pattern, rows, columns, wraparound);
+    } catch (error) {
+      alert(error);
+      alert('Attempting to restart with an empty board. You may need to choose a different pattern or increase your browser\'s size.');
+      return initGame([[]], rows, columns, wraparound);
+    }
+  }
+
+  // possible future enhancement: actually measure the width + height of a single "board" character rather than hardcoding.
+  const computeGameBoardDimensions = (boardPixelWidth, boardPixelHeight) => {
+    const rows = Math.floor(boardPixelHeight / 20);
+    const columns = Math.floor(boardPixelWidth * BOARD_WIDTH_FUDGE_FACTOR / 10.8);
+
+    return { rows, columns };
+  }
+
+  const { width: currentBoardPixelWidth, height: currentBoardPixelHeight } = useRefSize(boardRef);
+
+  // timer for game generation advancement: runs every update.
   useEffect(() => {
-    console.log({ boardWidth, boardHeight });
     if (isRunning) {
       const timeoutId = setTimeout(advanceOneGeneration, delay);
       return () => {
@@ -49,10 +74,28 @@ function App() {
     }
   });
 
+  // reset screen for new dimensions: is supposed to run only when board pixel dimensions change (although React wants, and gets, a more extensive dependency list)
+  // this doesn't work perfectly in every browser. 
+  // most prominently, there are quirks in firefox when resizing width to a smaller size (but only sometimes!).
+  // i don't want to spend a long time on edge-case browser quirks, so some things will remain quirky.
+  useEffect(() => {
+    if (boardPixelDimensions.width !== currentBoardPixelWidth || boardPixelDimensions.height !== currentBoardPixelHeight) {
+      setBoardPixelDimensions({ width: currentBoardPixelWidth, height: currentBoardPixelHeight});
+      const newBoardGameSize = computeGameBoardDimensions(currentBoardPixelWidth, currentBoardPixelHeight);
+
+      const gamePattern = game ? game.pattern : [[]];
+
+      setGame(safelyInitializeGame(gamePattern, newBoardGameSize.rows, newBoardGameSize.columns));
+    }
+  }, [boardPixelDimensions.width, boardPixelDimensions.height, currentBoardPixelWidth, currentBoardPixelHeight, game, wraparound]);
+
   return (
     <div id="main">
       <div id="sidebar">
         <div id="sidebar-group-1">
+          <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" rel="noopener noreferrer" target="_blank">Conway's Game Of Life</a>
+          <br />
+          <br />
           <PatternSelect setGameIsRunning={setIsRunning} reloadGame={reloadGame} />
           <br />
           <div>
@@ -63,16 +106,16 @@ function App() {
             <input type="button" onClick={() => setIsRunning(!isRunning) } value={(isRunning ? "Stop" : "Start")} />
           </div>
           <br />
+          <div>
+            <label htmlFor="speed-slider">Speed &nbsp;</label>
+            <input id="speed-slider" type="range" min="0" max={maxSpeedRange} value={currentSpeedRange} onChange={e => changeSpeed(e.target.value)} />
+          </div>
+          <br />
           <br />
         </div>
         <div id="sidebar-group-2">
           <div>
             Generation: {game ? game.generation : 0}
-          </div>
-          <br />
-          <div>
-            <label htmlFor="speed-slider">Speed &nbsp;</label>
-            <input id="speed-slider" type="range" min="0" max={maxSpeedRange} value={currentSpeedRange} onChange={e => changeSpeed(e.target.value)} />
           </div>
           <br />
           <div>
@@ -84,6 +127,9 @@ function App() {
           </div>
           <div>
             <input type="button" onClick={() => goToGeneration(game.generation - 100) } value="Rewind 100 Generations" />
+          </div>
+          <div>
+            <input type="button" onClick={() => goToGeneration(0) } value="Reset to Generation 0" />
           </div>
           <br />
           <br />

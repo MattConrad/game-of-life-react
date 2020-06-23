@@ -14,6 +14,7 @@ select, input[type="button"] {
   padding: 2%;
   display: flex;
   align-items: stretch;
+  flex-direction: column;
 }
 
 #sidebar { 
@@ -21,7 +22,11 @@ select, input[type="button"] {
   align-self: auto;
   min-width: 280px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+}
+
+#sidebar-group-1, #sidebar-group-2 {
+  flex: 1 1 0;
 }
 
 #board-container { 
@@ -46,16 +51,22 @@ select, input[type="button"] {
   color: #005CC8;
 }
 
-@media screen and (orientation: portrait) {
+@media screen and (orientation: landscape) {
   #main {
-    flex-direction: column;
-  }
-
-  #sidebar {
     flex-direction: row;
   }
 
+  #sidebar {
+    flex-direction: column;
+  }
+
   #sidebar-group-1, #sidebar-group-2 {
-    flex: 1 1 0;
+    flex: 0 0 0;
+  }
+}
+
+@media screen and (max-width: 700px), screen and (max-height: 450px) {
+  #board {
+    font-size: 10px;
   }
 }

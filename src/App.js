@@ -1,13 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initGame, nextGeneration, forceToGeneration, alterWraparound } from './game';
 import { maxSpeedRange, initialDelay, initialSpeedRangeValue, getDelayFromSpeedRange } from './speed';
+import computeGameBoardDimensions from './computeGameBoardDimensions';
 import Board from './components/Board';
 import PatternSelect from './components/PatternSelect';
 import { useRefSize } from './hooks/useRefSize';
 import './App.css';
 
-// usually the precisely calculated width is correct, but sometimes we get line wrap of one character. better to have a narrower effective width than get this wrap.
-const BOARD_WIDTH_FUDGE_FACTOR = 0.98;
+// initializing a game has a couple of known error scenarios, we'll catch and handle these
+// this function needs to be OUTSIDE the component, otherwise there's a cascade of dependency issues coming from useEffect().
+const safelyInitializeGame = (pattern, rows, columns, wraparound) => {
+  try {
+    return initGame(pattern, rows, columns, wraparound);
+  } catch (error) {
+    alert(error);
+    alert('Attempting to restart with an empty board. You may need to choose a different pattern or increase your browser\'s size.');
+    return initGame([[]], rows, columns, wraparound);
+  }
+}
 
 function App() {
   const [currentSpeedRange, setCurrentSpeedRange] = useState(initialSpeedRangeValue);
@@ -39,27 +49,8 @@ function App() {
   }
 
   const reloadGame = (patternData) => {
-    const gameSize = computeGameBoardDimensions(boardPixelDimensions.width, boardPixelDimensions.height);
-    setGame(safelyInitializeGame(patternData, gameSize.rows, gameSize.columns));
-  }
-
-  // initializing a game has a couple of known error scenarios, we'll catch and handle these
-  const safelyInitializeGame = (pattern, rows, columns) => {
-    try {
-      return initGame(pattern, rows, columns, wraparound);
-    } catch (error) {
-      alert(error);
-      alert('Attempting to restart with an empty board. You may need to choose a different pattern or increase your browser\'s size.');
-      return initGame([[]], rows, columns, wraparound);
-    }
-  }
-
-  // possible future enhancement: actually measure the width + height of a single "board" character rather than hardcoding.
-  const computeGameBoardDimensions = (boardPixelWidth, boardPixelHeight) => {
-    const rows = Math.floor(boardPixelHeight / 20);
-    const columns = Math.floor(boardPixelWidth * BOARD_WIDTH_FUDGE_FACTOR / 10.8);
-
-    return { rows, columns };
+    const gameSize = computeGameBoardDimensions(boardRef, boardPixelDimensions.width, boardPixelDimensions.height);
+    setGame(safelyInitializeGame(patternData, gameSize.rows, gameSize.columns, wraparound));
   }
 
   const { width: currentBoardPixelWidth, height: currentBoardPixelHeight } = useRefSize(boardRef);
@@ -81,11 +72,11 @@ function App() {
   useEffect(() => {
     if (boardPixelDimensions.width !== currentBoardPixelWidth || boardPixelDimensions.height !== currentBoardPixelHeight) {
       setBoardPixelDimensions({ width: currentBoardPixelWidth, height: currentBoardPixelHeight});
-      const newBoardGameSize = computeGameBoardDimensions(currentBoardPixelWidth, currentBoardPixelHeight);
+      const newBoardGameSize = computeGameBoardDimensions(boardRef, currentBoardPixelWidth, currentBoardPixelHeight);
 
       const gamePattern = game ? game.pattern : [[]];
 
-      setGame(safelyInitializeGame(gamePattern, newBoardGameSize.rows, newBoardGameSize.columns));
+      setGame(safelyInitializeGame(gamePattern, newBoardGameSize.rows, newBoardGameSize.columns, wraparound));
     }
   }, [boardPixelDimensions.width, boardPixelDimensions.height, currentBoardPixelWidth, currentBoardPixelHeight, game, wraparound]);
 

@@ -7,6 +7,10 @@ import PatternSelect from './components/PatternSelect';
 import { useRefSize } from './hooks/useRefSize';
 import './App.css';
 
+const getCurrentFontSize = (boardRef) => {
+  return window.getComputedStyle(boardRef.current).getPropertyValue('font-size');
+}
+
 // initializing a game has a couple of known error scenarios, we'll catch and handle these
 // this function needs to be OUTSIDE the component, otherwise there's a cascade of dependency issues coming from useEffect().
 const safelyInitializeGame = (pattern, rows, columns, wraparound) => {
@@ -49,7 +53,9 @@ function App() {
   }
 
   const reloadGame = (patternData) => {
-    const gameSize = computeGameBoardDimensions(boardRef, boardPixelDimensions.width, boardPixelDimensions.height);
+    const fontSizeString = getCurrentFontSize(boardRef);
+    const gameSize = computeGameBoardDimensions(fontSizeString, boardPixelDimensions.height, boardPixelDimensions.width);
+
     setGame(safelyInitializeGame(patternData, gameSize.rows, gameSize.columns, wraparound));
   }
 
@@ -72,7 +78,9 @@ function App() {
   useEffect(() => {
     if (boardPixelDimensions.width !== currentBoardPixelWidth || boardPixelDimensions.height !== currentBoardPixelHeight) {
       setBoardPixelDimensions({ width: currentBoardPixelWidth, height: currentBoardPixelHeight});
-      const newBoardGameSize = computeGameBoardDimensions(boardRef, currentBoardPixelWidth, currentBoardPixelHeight);
+
+      const fontSizeString = getCurrentFontSize(boardRef);
+      const newBoardGameSize = computeGameBoardDimensions(fontSizeString, currentBoardPixelHeight, currentBoardPixelWidth);
 
       const gamePattern = game ? game.pattern : [[]];
 
